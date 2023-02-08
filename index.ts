@@ -1,73 +1,26 @@
+import { readFileSync } from "fs";
 import * as pulumi from "@pulumi/pulumi";
 import * as resources from "@pulumi/azure-native/resources";
 import { authorization, insights, storage, web } from "@pulumi/azure-native";
 
+import { FunctionApp } from './Components/FunctionApp';
+
+// Helpers
+function getName(type: string) {
+    const projectName = pulumi.getProject().toLowerCase();
+    const stackName = pulumi.getStack().toLowerCase();
+    return `${projectName}-${stackName}-${type}`;
+}
+
+// Get the current Azure environment
+//const config = pulumi.output(authorization.getClientConfig());
+
 // Create an Azure Resource Group
-const resourceGroup = new resources.ResourceGroup("apiDemo");
+const resourceGroup = new resources.ResourceGroup(getName("rg"));
 
-// Create an Azure resource (Storage Account)
-const storageAccount = new storage.StorageAccount("sa", {
-    resourceGroupName: resourceGroup.name,
-    sku: {
-        name: storage.SkuName.Standard_LRS,
-    },
-    kind: storage.Kind.StorageV2,
+const mySecondFunction = new FunctionApp(getName("app"), {
+    resourceGroupName: resourceGroup.name
 });
 
-const config = pulumi.output(authorization.getClientConfig());
-const appInsights = new insights.Component("appinsights", {
-    resourceGroupName: resourceGroup.name,
-    kind: "web",
-    applicationType: "web",
-    tags: {
-        //[`hidden-link:/subscriptions/${config.subscriptionId}/resourceGroups/${resourceGroup.name}/providers/Microsoft.Web/sites/${func}`]: 'Resource'
-    }
-});
-
-/* Hosting Plan */
-const plan = new web.AppServicePlan("plan", {
-    resourceGroupName: resourceGroup.name,
-    sku: {
-        name: "Y1",
-        tier: 'Dynamic'
-    }
-});
-
-
-/* Function App */
-const func = new web.WebApp("func", {
-    resourceGroupName: resourceGroup.name,
-    serverFarmId: plan.id,
-    httpsOnly: true,
-    kind: "functionapp",
-    identity: {
-        type: "SystemAssigned"
-    },
-    siteConfig: {
-        appSettings: [
-            {
-                name: 'APPINSIGHTS_INSTRUMENTATIONKEY',
-                value: appInsights.instrumentationKey
-            },
-            {
-                name: 'AzureWebJobsStorage__accountName',
-                value: storageAccount.name
-            },
-            {
-                name: 'FUNCTIONS_WORKER_RUNTIME',
-                value: 'powershell'
-            },
-            {
-                name: 'FUNCTIONS_EXTENSION_VERSION',
-                value: '~4'
-            }
-        ]
-    }
-});
-
-const storageBlobDataOwnerRole = new authorization.RoleAssignment("storageBlobDataOwnerRole", {
-    principalId: func.identity.apply(i => i!.principalId),
-    principalType: "ServicePrincipal",
-    roleDefinitionId: "/providers/Microsoft.Authorization/roleDefinitions/b7e6dc6d-f1e8-4753-8033-0f276bb0955b",
-    scope: storageAccount.id
-});
+// add readme to stack outputs. must be named "readme".
+export const readme = readFileSync(`./Pulumi.${pulumi.getStack()}.README.md`).toString();
