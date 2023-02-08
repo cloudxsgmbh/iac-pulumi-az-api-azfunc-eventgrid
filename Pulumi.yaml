@@ -1,0 +1,3 @@
+name: apiDemo
+runtime: nodejs
+description: Demo to try out API Management and Azure Functions
