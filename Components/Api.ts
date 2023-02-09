@@ -28,6 +28,9 @@ export class Api extends pulumi.ComponentResource {
       publisherEmail: apiStackConfig.require('publisherEmail'),
       publisherName: apiStackConfig.require('publisherName'),
       enableClientCertificate: true,
+      /*       identity: {
+              type: "SystemAssigned"
+            }, */
     }, { parent: this });
 
 
@@ -40,22 +43,58 @@ export class Api extends pulumi.ComponentResource {
       url: args.function.defaultHostName.apply((hostName) => `https://${hostName}/api`)
     }, { parent: this });
 
-    /*     const myApi = new apimanagement.Api(this.getName("api"), {
-          resourceGroupName: args.resourceGroupName,
-          path: "api",
-          serviceName: apiManagementService.name,
-          apiType: apimanagement.ApiType.Http
-        }, { parent: this });
-    
-    
-        const operation = new apimanagement.ApiOperation(this.getName("operation"), {
-          resourceGroupName: args.resourceGroupName,
-          apiId: myApi.id,
-          serviceName: apiManagementService.name,
-          displayName: "My first operation",
-          method: "GET",
-          urlTemplate: "api"
-        }, { parent: this }); */
+
+    // Api
+    const myApi = new apimanagement.Api(this.getName("api"), {
+      resourceGroupName: args.resourceGroupName,
+      displayName: this.name,
+      path: "api",
+      serviceName: apiManagementService.name,
+      apiType: apimanagement.ApiType.Http,
+      protocols: [apimanagement.Protocol.Https],
+    }, { parent: this });
+
+
+    // Api Operation
+    const operation = new apimanagement.ApiOperation(this.getName('getHelloNode'), {
+      resourceGroupName: args.resourceGroupName,
+      apiId: myApi.name,
+      serviceName: apiManagementService.name,
+      displayName: "HelloNode",
+      method: "GET",
+      urlTemplate: "/hello",
+    }, { parent: this });
+
+
+    // Api Operation Policy
+    const opPolicy = new apimanagement.ApiOperationPolicy("set-backend-service", {
+      resourceGroupName: args.resourceGroupName,
+      apiId: myApi.name,
+      operationId: operation.name,
+      serviceName: apiManagementService.name,
+      policyId: "policy",
+      format: apimanagement.PolicyContentFormat.Xml,
+      value: functionAppBackend.name.apply((backendName) => {
+        return `<policies>
+          <inbound>
+              <base />
+              <set-backend-service id="apim-generated-policy" backend-id="${backendName}" />
+          </inbound>
+          <backend>
+              <base />
+          </backend>
+          <outbound>
+              <base />
+          </outbound>
+          <on-error>
+              <base />
+          </on-error>
+        </policies>` })
+    }, { parent: this });
+
+
+
+    this.registerOutputs();
   }
 
   private getName(type: string) {
