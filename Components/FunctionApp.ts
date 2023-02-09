@@ -16,8 +16,12 @@ interface FunctionAppArgs {
 
 export class FunctionApp extends pulumi.ComponentResource {
 
+  // Private variables
   private _componentName: string;
+  // Public variables
+  public readonly functionApp: web.WebApp;
 
+  // Constructor
   constructor(private name: string, private args: FunctionAppArgs, opts?: pulumi.ResourceOptions) {
 
     super("clxs:FunctionApp", name, args, opts);
@@ -69,7 +73,7 @@ export class FunctionApp extends pulumi.ComponentResource {
 
     /* Function App */
     const codeBlobUrl = signedBlobReadUrl(codeBlob, codeContainer, storageAccount, args.resourceGroup);
-    const func = new web.WebApp(this.getName("funcApp"), {
+    this.functionApp = new web.WebApp(this.getName("funcApp"), {
       resourceGroupName: args.resourceGroup.name,
       serverFarmId: plan.id,
       httpsOnly: true,
@@ -90,7 +94,7 @@ export class FunctionApp extends pulumi.ComponentResource {
     }, { parent: this });
 
     const storageBlobDataOwnerRole = new authorization.RoleAssignment(this.getName("storageBlobDataOwnerRole"), {
-      principalId: func.identity.apply(i => i!.principalId),
+      principalId: this.functionApp.identity.apply(i => i!.principalId),
       principalType: "ServicePrincipal",
       roleDefinitionId: "/providers/Microsoft.Authorization/roleDefinitions/b7e6dc6d-f1e8-4753-8033-0f276bb0955b",
       scope: storageAccount.id
@@ -99,10 +103,11 @@ export class FunctionApp extends pulumi.ComponentResource {
 
     // Register that we are done constructing the component
     this.registerOutputs({
-      storageAccountName: storageAccount.name
+      functionName: this.functionApp.name,
     });
   }
 
+  // Private methods
   private getName(type: string) {
     return `${this._componentName}-${type}`;
   }

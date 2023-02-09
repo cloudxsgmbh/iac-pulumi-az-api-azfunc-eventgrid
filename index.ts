@@ -1,9 +1,9 @@
 import { readFileSync } from "fs";
 import * as pulumi from "@pulumi/pulumi";
 import * as resources from "@pulumi/azure-native/resources";
-import { authorization, insights, storage, web } from "@pulumi/azure-native";
 
 import { FunctionApp } from './Components/FunctionApp';
+import { Api } from './Components/Api';
 
 // Helpers
 function getName(type: string) {
@@ -18,8 +18,16 @@ function getName(type: string) {
 // Create an Azure Resource Group
 const resourceGroup = new resources.ResourceGroup(getName("rg"));
 
-const mySecondFunction = new FunctionApp(getName("app"), {
-    resourceGroupName: resourceGroup.name
+// Create a Function App
+const functionApp = new FunctionApp(getName("app"), {
+    resourceGroup: resourceGroup,
+    functionDirectory: "./FunctionApp"
+});
+
+// Create an Api Management
+const apiManagement = new Api(getName("api"), {
+    resourceGroupName: resourceGroup.name,
+    function: functionApp.functionApp
 });
 
 // add readme to stack outputs. must be named "readme".
