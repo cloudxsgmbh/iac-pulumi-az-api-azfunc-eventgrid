@@ -93,6 +93,8 @@ export class FunctionApp extends pulumi.ComponentResource {
       }
     }, { parent: this });
 
+
+    /* Role Assignments */
     const storageBlobDataOwnerRole = new authorization.RoleAssignment(this.getName("storageBlobDataOwnerRole"), {
       principalId: this.functionApp.identity.apply(i => i!.principalId),
       principalType: "ServicePrincipal",

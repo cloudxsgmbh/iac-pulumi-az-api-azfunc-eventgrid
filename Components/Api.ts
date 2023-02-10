@@ -34,13 +34,30 @@ export class Api extends pulumi.ComponentResource {
     }, { parent: this });
 
 
+    const funcKey = new apimanagement.NamedValue(this.getName('funcKey'), {
+      resourceGroupName: args.resourceGroupName,
+      serviceName: apiManagementService.name,
+      displayName: args.function.name.apply(n => `${n}-functionkey`),
+      secret: true,
+      value: "ThisIsAFunctionKey", //TODO: generate a new one on the function app. Seems not possible with Pulumi. Further investigation needed.
+      tags: ["key", "function", "auto"]
+    }, { parent: this })
+
+
     //Backend that points to the function app
     const functionAppBackend = new apimanagement.Backend(this.getName('functionBackend'), {
       resourceGroupName: args.resourceGroupName,
       serviceName: apiManagementService.name,
       resourceId: args.function.id.apply(id => `https://management.azure.com${id}`),
       protocol: apimanagement.Protocol.Http,
-      url: args.function.defaultHostName.apply((hostName) => `https://${hostName}/api`)
+      url: args.function.defaultHostName.apply((hostName) => `https://${hostName}/api`),
+      credentials: {
+        header: {
+          "x-functions-key": [
+            funcKey.name.apply(name => `{{${name}}}`)
+          ]
+        }
+      }
     }, { parent: this });
 
 
@@ -62,7 +79,7 @@ export class Api extends pulumi.ComponentResource {
       serviceName: apiManagementService.name,
       displayName: "HelloNode",
       method: "GET",
-      urlTemplate: "/hello",
+      urlTemplate: "/HelloNode", //This has to be the same as the function name!
     }, { parent: this });
 
 
