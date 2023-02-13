@@ -1,0 +1,16 @@
+# Azure Functions artifacts
+bin
+obj
+appsettings.json
+local.settings.json
+
+# TypeScript output
+dist
+out
+
+# Dependency directories
+node_modules/
+jspm_packages/
+
+# Optional eslint cache
+.eslintcache

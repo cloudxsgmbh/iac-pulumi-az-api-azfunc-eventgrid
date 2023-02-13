@@ -39,7 +39,7 @@ export class Api extends pulumi.ComponentResource {
       serviceName: apiManagementService.name,
       displayName: args.function.name.apply(n => `${n}-functionkey`),
       secret: true,
-      value: "ThisIsAFunctionKey", //TODO: generate a new one on the function app. Seems not possible with Pulumi. Further investigation needed.
+      value: "HwqCOL4gl8a7Lj3z5MUv2/QW/z2Yt4iuaS7mhQWqaA6rzJn3ltft3w==", //TODO: generate a new one on the function app. Seems not possible with Pulumi. Further investigation needed.
       tags: ["key", "function", "auto"]
     }, { parent: this })
 
