@@ -34,7 +34,7 @@ const functionApp = new FunctionApp(getName("app"), {
 });
 
 // Create an Api Management
-const apiManagement = new Api(getName("api"), {
+new Api(getName("api"), {
     resourceGroupName: resourceGroup.name,
     function: functionApp.functionApp
 });

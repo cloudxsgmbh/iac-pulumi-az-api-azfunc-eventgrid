@@ -73,7 +73,7 @@ async function getFolders(rootPath: string) {
 
         // remove stub folders (already cleaned up)
         const nonStubFolders: string[] = [];
-        for (let folder of folders) {
+        for (const folder of folders) {
             const isStubFolder = await isStub(folder);
             if (!isStubFolder) {
                 nonStubFolders.push(folder);

@@ -1,6 +1,5 @@
 import * as pulumi from "@pulumi/pulumi";
 import { apimanagement, web } from "@pulumi/azure-native";
-import { config } from "process";
 
 
 interface ApiArgs {
@@ -84,7 +83,7 @@ export class Api extends pulumi.ComponentResource {
 
 
     // Api Operation Policy
-    const opPolicy = new apimanagement.ApiOperationPolicy("set-backend-service", {
+    new apimanagement.ApiOperationPolicy("set-backend-service", {
       resourceGroupName: args.resourceGroupName,
       apiId: myApi.name,
       operationId: operation.name,

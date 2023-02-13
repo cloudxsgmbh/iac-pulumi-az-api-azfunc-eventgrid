@@ -98,15 +98,15 @@ export class FunctionApp extends pulumi.ComponentResource {
           { name: "WEBSITE_NODE_DEFAULT_VERSION", value: "~18" },
           { name: "WEBSITE_RUN_FROM_PACKAGE", value: codeBlobUrl },
           { name: "EventGridTopicEndpoint", value: args.eventGridTopic.endpoint },
-          { name: "EventGridTopicKey", value: eventGridTopicKey.apply(k => k!.key1!) },
+          { name: "EventGridTopicKey", value: eventGridTopicKey.apply(k => k?.key1 || '') },
         ]
       }
     }, { parent: this });
 
 
     /* Role Assignments */
-    const storageBlobDataOwnerRole = new authorization.RoleAssignment(this.getName("storageBlobDataOwnerRole"), {
-      principalId: this.functionApp.identity.apply(i => i!.principalId),
+    new authorization.RoleAssignment(this.getName("storageBlobDataOwnerRole"), {
+      principalId: this.functionApp.identity.apply(i => i?.principalId || ''),
       principalType: "ServicePrincipal",
       roleDefinitionId: "/providers/Microsoft.Authorization/roleDefinitions/b7e6dc6d-f1e8-4753-8033-0f276bb0955b",
       scope: storageAccount.id
