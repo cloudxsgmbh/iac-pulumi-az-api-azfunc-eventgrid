@@ -20,17 +20,12 @@ function getName(type: string) {
 const resourceGroup = new resources.ResourceGroup(getName("rg"));
 
 
-// Create EventGrid resources
-const eventGridTopic = new eventgrid.Topic(getName("egTopic"), {
-    resourceGroupName: resourceGroup.name,
-});
 
 
 // Create a Function App
 const functionApp = new FunctionApp(getName("app"), {
     resourceGroup: resourceGroup,
-    functionDirectory: "./FunctionApp",
-    eventGridTopic: eventGridTopic
+    functionDirectory: "./FunctionApp"
 });
 
 // Create an Api Management
@@ -40,6 +35,28 @@ new Api(getName("api"), {
 });
 
 
+// Create EventGrid resources
+const eventGridTopic = new eventgrid.Topic(getName("egTopic"), {
+    resourceGroupName: resourceGroup.name,
+});
+
+new eventgrid.EventSubscription(getName("egSub"), {
+    scope: eventGridTopic.id,
+    destination: {
+        endpointType: "AzureFunction",
+        resourceId: functionApp.functionApp.id.apply(id => `${id}/functions/EventGridTrigger1`),
+        maxEventsPerBatch: 1,
+        preferredBatchSizeInKilobytes: 64,
+    },
+    /*     filter: {
+            enableAdvancedFilteringOnArrays: true
+        }, */
+    eventDeliverySchema: "EventGridSchema",
+    retryPolicy: {
+        maxDeliveryAttempts: 10,
+        eventTimeToLiveInMinutes: 1440
+    }
+});
 
 // add readme to stack outputs. must be named "readme".
 export const readme = readFileSync(`./Pulumi.${pulumi.getStack()}.README.md`).toString();

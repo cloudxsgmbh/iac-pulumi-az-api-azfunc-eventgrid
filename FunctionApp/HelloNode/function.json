@@ -11,9 +11,12 @@
       ]
     },
     {
-      "type": "http",
-      "direction": "out",
-      "name": "res"
+      "type": "eventGrid",
+      "name": "outputEvent",
+      "topicEndpointUri": "EventGridTopicEndpoint",
+      "topicKeySetting": "EventGridTopicKey",
+      "direction": "out"
     }
-  ]
+  ],
+  "scriptFile": "../dist/HelloNode/index.js"
 }
