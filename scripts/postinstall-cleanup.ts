@@ -20,6 +20,7 @@ const modulesToKeep = [
     "resources",     // for Resource Groups
     "apimanagement", // for API Management
     "authorization", // for getting Client Config
+    "eventgrid",     // for Event Grid
     "insights",      // Azure Insights
     "storage",     // for Storage Account
     "web"
