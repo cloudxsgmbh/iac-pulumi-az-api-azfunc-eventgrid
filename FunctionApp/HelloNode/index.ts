@@ -3,19 +3,25 @@ import { AzureFunction, Context, HttpRequest } from "@azure/functions"
 const HelloNode: AzureFunction = async function (context: Context, req: HttpRequest) {
   context.log('JavaScript HTTP trigger function processed a request.');
 
-  var timeStamp = new Date().toISOString();
+  const timeStamp = new Date().toISOString();
+
+  // Retrieve caller name from query string or body
+  const caller = req.query.name || req.body.name || "unknown";
+
 
   context.bindings.outputEvent = [];
-
   context.bindings.outputEvent.push({
+    "topic": "",
+    "subject": "HelloNode",
     "id": "1",
-    "subject": "test",
-    "data": {
-      "name": "test"
-    },
-    "eventType": "test",
+    "eventType": "Hello",
     "eventTime": timeStamp,
-    "dataVersion": "1.0"
+    "data": {
+      "content": "This is a test event. It was sent by the Azure Function called HelloNode.",
+      "caller": caller
+    },
+    "dataVersion": "1.0",
+    "metadataVersion": "1"
   });
 
 

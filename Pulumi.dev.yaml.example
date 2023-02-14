@@ -3,5 +3,5 @@ config:
 
   apiManagementService:skuType: Developer
   apiManagementService:capacity: 1
-  apiManagementService:publisherEmail: andy@cloudxs.ch
-  apiManagementService:publisherName: Cloudxs
+  apiManagementService:publisherEmail: dev@example.ch
+  apiManagementService:publisherName: PublisherName

@@ -20,12 +20,17 @@ function getName(type: string) {
 const resourceGroup = new resources.ResourceGroup(getName("rg"));
 
 
+// Create an EventGrid Topic
+const eventGridTopic = new eventgrid.Topic(getName("egTopic"), {
+    resourceGroupName: resourceGroup.name,
+});
 
 
 // Create a Function App
 const functionApp = new FunctionApp(getName("app"), {
     resourceGroup: resourceGroup,
-    functionDirectory: "./FunctionApp"
+    functionDirectory: "./FunctionApp",
+    eventGridTopic: eventGridTopic
 });
 
 // Create an Api Management
@@ -35,11 +40,7 @@ new Api(getName("api"), {
 });
 
 
-// Create EventGrid resources
-const eventGridTopic = new eventgrid.Topic(getName("egTopic"), {
-    resourceGroupName: resourceGroup.name,
-});
-
+// Create an EventGrid Subscription for the Azure Function
 new eventgrid.EventSubscription(getName("egSub"), {
     scope: eventGridTopic.id,
     destination: {

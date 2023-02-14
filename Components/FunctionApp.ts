@@ -13,7 +13,7 @@ interface FunctionAppArgs {
   /** Provide a relative path to the Azure function code */
   functionDirectory: string;
   /** Event Grid Topic to send events to */
-  //eventGridTopic: eventgrid.Topic;
+  eventGridTopic: eventgrid.Topic;
 }
 
 export class FunctionApp extends pulumi.ComponentResource {
@@ -73,11 +73,11 @@ export class FunctionApp extends pulumi.ComponentResource {
     }, { parent: this });
 
     /* Retrieve the access key for the Event Grid topic */
-    /* const eventGridTopicKey = pulumi.all([args.resourceGroup.name, args.eventGridTopic.name]).apply(([resourceGroupName, topicName]) => {
+    const eventGridTopicKey = pulumi.all([args.resourceGroup.name, args.eventGridTopic.name]).apply(([resourceGroupName, topicName]) => {
       return eventgrid.listTopicSharedAccessKeys({ resourceGroupName, topicName }, {
         parent: this,
       });
-    }); */
+    });
 
     /* Function App */
     const codeBlobUrl = signedBlobReadUrl(codeBlob, codeContainer, storageAccount, args.resourceGroup);
@@ -97,8 +97,8 @@ export class FunctionApp extends pulumi.ComponentResource {
           { name: 'FUNCTIONS_EXTENSION_VERSION', value: '~4' },
           { name: "WEBSITE_NODE_DEFAULT_VERSION", value: "~18" },
           { name: "WEBSITE_RUN_FROM_PACKAGE", value: codeBlobUrl },
-          //{ name: "EventGridTopicEndpoint", value: args.eventGridTopic.endpoint },
-          //{ name: "EventGridTopicKey", value: eventGridTopicKey.apply(k => k?.key1 || '') },
+          { name: "EventGridTopicEndpoint", value: args.eventGridTopic.endpoint },
+          { name: "EventGridTopicKey", value: eventGridTopicKey.apply(k => k?.key1 || '') },
         ]
       }
     }, { parent: this });
