@@ -33,12 +33,18 @@ export class Api extends pulumi.ComponentResource {
     }, { parent: this });
 
 
+    // Retrieve the function app host keys
+    const functionHostKeys = pulumi.all([args.resourceGroupName, args.function.name]).apply(([resourceGroupName, name]) => {
+      return web.listWebAppHostKeys({ name, resourceGroupName }, { parent: this });
+    });
+
+    // Create a named value for the function key and write the default host key to it
     const funcKey = new apimanagement.NamedValue(this.getName('funcKey'), {
       resourceGroupName: args.resourceGroupName,
       serviceName: apiManagementService.name,
       displayName: args.function.name.apply(n => `${n}-functionkey`),
       secret: true,
-      value: "HwqCOL4gl8a7Lj3z5MUv2/QW/z2Yt4iuaS7mhQWqaA6rzJn3ltft3w==", //TODO: generate a new one on the function app. Seems not possible with Pulumi. Further investigation needed.
+      value: functionHostKeys.apply(k => `${k?.functionKeys?.default}`),
       tags: ["key", "function", "auto"]
     }, { parent: this })
 
